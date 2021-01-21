@@ -73,9 +73,8 @@ extension Croper {
     }
     
     func fitFactor() -> (transform: CGAffineTransform, contentInset: UIEdgeInsets) {
-        let absRadian = fabs(Double(radian))
-        let cosValue = CGFloat(cos(absRadian))
-        let sinValue = CGFloat(sin(absRadian))
+        let cosValue = abs(CGFloat(cos(radian)))
+        let sinValue = abs(CGFloat(sin(radian)))
         
         let verSide1 = cosValue * cropFrame.height
         let verSide2 = sinValue * cropFrame.width
