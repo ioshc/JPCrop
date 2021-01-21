@@ -26,6 +26,8 @@ public class Croper: UIView {
     public let imageWHRatio: CGFloat
     /// 是否为横幅图片
     public var isLandscapeImage: Bool { imageWHRatio > 1 }
+    /// 自动调整时时，是否震动反馈
+    public var isImpactFeedback: Bool = ture
     
     /// 裁剪宽高比
     public private(set) var cropWHRatio: CGFloat = 0
@@ -55,6 +57,7 @@ public class Croper: UIView {
     let borderLayer = CAShapeLayer()
     let idleGridLayer = CAShapeLayer()
     let rotateGridLayer = CAShapeLayer()
+    let impactFeedbackGenerator = UIImpactFeedbackGenerator(style: .light)
     
     // MARK:- 构造器
     public convenience init(frame: CGRect,
