@@ -88,6 +88,11 @@ extension Croper {
 
 extension Croper: UIScrollViewDelegate {
     public func viewForZooming(in scrollView: UIScrollView) -> UIView? { imageView }
+    
+    public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        guard isImpactFeedback else { return }
+        impactFeedbackGenerator.impactOccurred()
+    }
 }
 
 extension Croper {
