@@ -277,7 +277,7 @@ extension Croper {
     // MARK: 异步裁剪
     /// 裁剪：compressScale：压缩比例，默认为1，即原图尺寸
     public func asyncCrop(_ compressScale: CGFloat = 1, _ cropDone: @escaping (UIImage?) -> ()) {
-        guard let imageRef = image.cgImage else {
+        guard let imageRef = image.fixOrientation().cgImage else {
             cropDone(nil)
             return
         }
