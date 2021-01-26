@@ -261,7 +261,7 @@ extension Croper {
     // MARK: 同步裁剪
     /// 裁剪：compressScale：压缩比例，默认为1，即原图尺寸
     public func crop(_ compressScale: CGFloat = 1) -> UIImage? {
-        guard let imageRef = image.cgImage else { return nil }
+        guard let imageRef = image.fixOrientation().cgImage else { return nil }
         
         let convertTranslate = borderLayer.convert(.init(x: cropFrame.origin.x, y: cropFrame.maxY), to: imageView.layer)
         
@@ -298,5 +298,78 @@ extension Croper {
                                    height)
             DispatchQueue.main.async { cropDone(result) }
         }
+    }
+}
+
+private extension UIImage {
+    func fixOrientation() -> UIImage {
+        if self.imageOrientation == .up {
+            return self
+        }
+        var transform = CGAffineTransform.identity
+
+        switch self.imageOrientation {
+        case .down, .downMirrored:
+            transform = transform.translatedBy(x: self.size.width, y: self.size.height)
+            transform = transform.rotated(by: .pi)
+
+        case .left, .leftMirrored:
+            transform = transform.translatedBy(x: self.size.width, y: 0)
+            transform = transform.rotated(by: .pi / 2)
+
+        case .right, .rightMirrored:
+            transform = transform.translatedBy(x: 0, y: self.size.height)
+            transform = transform.rotated(by: -.pi / 2)
+
+        default:
+            break
+        }
+
+        switch self.imageOrientation {
+        case .upMirrored, .downMirrored:
+            transform = transform.translatedBy(x: self.size.width, y: 0)
+            transform = transform.scaledBy(x: -1, y: 1)
+
+        case .leftMirrored, .rightMirrored:
+            transform = transform.translatedBy(x: self.size.height, y: 0)
+            transform = transform.scaledBy(x: -1, y: 1)
+
+        default:
+            break
+        }
+
+        guard let cgImg = cgImage, let colorSpace = cgImg.colorSpace else {
+            return UIImage()
+        }
+
+        let ctx = CGContext(data: nil,
+                            width: Int(self.size.width),
+                            height: Int(self.size.height),
+                            bitsPerComponent: cgImg.bitsPerComponent,
+                            bytesPerRow: 0,
+                            space: colorSpace,
+                            bitmapInfo: cgImg.bitmapInfo.rawValue)
+        ctx?.concatenate(transform)
+
+        switch self.imageOrientation {
+        case .left, .leftMirrored, .right, .rightMirrored:
+            ctx?.draw(cgImg,
+                      in: CGRect(x: CGFloat(0),
+                                 y: CGFloat(0),
+                                 width: CGFloat(size.height),
+                                 height: CGFloat(size.width)))
+
+        default:
+            ctx?.draw(cgImg,
+                      in: CGRect(x: CGFloat(0),
+                                 y: CGFloat(0),
+                                 width: CGFloat(size.width),
+                                 height: CGFloat(size.height)))
+        }
+
+        guard let cgimg = (ctx?.makeImage()) else {
+            return UIImage()
+        }
+        return UIImage(cgImage: cgimg)
     }
 }
